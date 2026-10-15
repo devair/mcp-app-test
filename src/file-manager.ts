@@ -1,36 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/server"
 import { serveStdio } from "@modelcontextprotocol/server/stdio"
 import { z } from "zod"
+import { PDFParse } from "pdf-parse"
+import { listFiles, resolveSafePath } from "./utils.js"
 import * as fs from "fs/promises"
 import * as path from "path"
-import { PDFParse } from "pdf-parse"
-
-
-const listFiles = async (directory: string, fileList: string[] = []) => {
-    try {
-        // fs.promises.access substitui o existsSync (ela lança erro se o arquivo não existir)
-        await fs.access(directory)
-    } catch {
-        return [] // Diretório não existe
-    }
-
-    const files = await fs.readdir(directory)
-
-    for (const item of files) {
-        const fullPath = path.join(directory, item)
-        const stat = await fs.stat(fullPath)
-
-        if (stat.isDirectory()) {
-            await listFiles(fullPath, fileList)
-        }
-        else {
-            fileList.push(fullPath)
-        }
-
-    }
-    return fileList
-}
-
 
 function createServer() {
     const server = new McpServer({
@@ -50,7 +24,7 @@ function createServer() {
             })
         },
         async ({ directory }) => {
-            const resolvedPath = path.resolve(directory)
+            const resolvedPath = await resolveSafePath(directory)
             const files = await listFiles(resolvedPath)
             return {
                 content: [
@@ -74,7 +48,7 @@ function createServer() {
             }),
         },
         async ({ filePath }) => {
-            const resolvedPath = path.resolve(filePath)
+            const resolvedPath = await resolveSafePath(filePath)
             const content = await fs.readFile(resolvedPath, "utf-8")
             return {
                 content: [
@@ -100,7 +74,7 @@ function createServer() {
             })
         },
         async ({ filePath, content }) => {
-            const resolvedPath = path.resolve(filePath)
+            const resolvedPath = await resolveSafePath(filePath)
             await fs.mkdir(path.dirname(resolvedPath), { recursive: true })
             await fs.writeFile(resolvedPath, content, "utf-8")
             return {
@@ -125,7 +99,7 @@ function createServer() {
             }),
         },
         async ({ filePath }) => {
-            const resolvedPath = path.resolve(filePath)
+            const resolvedPath = await resolveSafePath(filePath)
             const buffer = await fs.readFile(resolvedPath)
             const parsedPdf = new PDFParse({ data: buffer })
             const content = (await parsedPdf.getText()).text

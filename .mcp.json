@@ -4,7 +4,7 @@
 			"type": "stdio",
 			"command": "node",
 			"args": [
-				"build\\index.js"
+				"build\\weather.js"
 			]
 		},
 		"file-manager": {
@@ -12,7 +12,8 @@
 			"command": "node",
 			"args": [
 				"build\\file-manager.js"
-			]
+			],
+			"env": { "ALLOWED_DIRS": "C:\\Developer\\Node Projects\\" }
 		}
 	}
 }
