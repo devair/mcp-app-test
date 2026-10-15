@@ -1,0 +1,18 @@
+{
+	"mcpServers": {
+		"weather": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"build\\index.js"
+			]
+		},
+		"file-manager": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"build\\file-manager.js"
+			]
+		}
+	}
+}
